@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2980b9">
+  <title>クリニック集荷・センター管理システム</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    :root {
+      --primary: #3498db; --primary-dark: #2980b9;
+      --success: #27ae60; --success-dark: #219653;
+      --warning: #e67e22; --warning-dark: #d35400;
+      --danger: #e74c3c; --purple: #8e44ad; --purple-dark: #732d91;
+      --bg-color: #f4f6f9; --card-bg: #ffffff;
+      --text-main: #333333; --text-sub: #666666; --border-color: #dcdcdc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+      margin: 0; padding: 10px; background-color: var(--bg-color); color: var(--text-main);
+      -webkit-tap-highlight-color: transparent;
+    }
+    h2 { font-size: 1.25rem; color: #2c3e50; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin: 5px 0 12px; }
+    h3 { font-size: 1.1rem; margin: 0 0 10px; }
+    .card { background: var(--card-bg); padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .btn {
+      display: inline-block; background: var(--primary); color: white; padding: 12px 16px; border: none;
+      border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; text-align: center;
+      margin: 5px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:hover { background: var(--primary-dark); }
+    .btn:disabled { background: #aab4bd; cursor: not-allowed; }
+    .btn:focus-visible, .tab-btn:focus-visible { outline: 3px solid #f1c40f; outline-offset: 2px; }
+    .btn-success { background: var(--success); } .btn-success:hover { background: var(--success-dark); }
+    .btn-print { background: var(--warning); } .btn-print:hover { background: var(--warning-dark); }
+    .btn-gps { background: var(--purple); font-size: 13px; padding: 8px 12px; width: auto; margin: 0; }
+    .btn-gps:hover { background: var(--purple-dark); }
+    .btn-secondary { background: #34495e; }
+    .btn-small { padding: 6px 12px; font-size: 12px; width: auto; margin: 0; }
+    .btn-danger { background: var(--danger); }
+
+    input, select, textarea {
+      padding: 12px; font-size: 16px; width: 100%; margin-top: 5px; margin-bottom: 15px;
+      border: 1px solid var(--border-color); border-radius: 6px; background: #fff;
+    }
+    textarea { resize: vertical; height: 80px; }
+
+    .clinic-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 8px; }
+    .clinic-header-row label { margin: 0; font-weight: bold; }
+
+    details.accordion-group { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+    details.accordion-group[open] { border-color: var(--primary); }
+    summary.accordion-summary { padding: 12px 15px; font-weight: bold; background: #f1f4f8; color: var(--primary-dark); cursor: pointer; user-select: none; font-size: 14px; }
+    .accordion-content { padding: 10px; background: #fff; border-top: 1px solid #eee; }
+
+    .item-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; background: #fafafa; padding: 8px 10px; border-radius: 6px; border: 1px solid #eee; }
+    .item-row label { font-weight: bold; flex: 1; font-size: 15px; margin: 0; padding-right: 10px; word-break: break-all; }
+    .item-row input { width: 90px; margin: 0; text-align: center; padding: 8px; }
+    .item-row.has-count { background: #eafaf1; border-color: #a9dfbf; }
+
+    .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border: 1px solid #ddd; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th, td { border-bottom: 1px solid #ddd; border-right: 1px solid #eee; padding: 10px 8px; text-align: left; font-size: 13px; }
+    th { background-color: #f2f2f2; text-align: center; position: sticky; top: 0; z-index: 10; }
+    td:last-child, th:last-child { border-right: none; }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+    .tab-btn { flex: 1; padding: 12px 8px; background: #e0e0e0; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; color: #555; text-align: center; }
+    .tab-btn.active { background: var(--primary); color: white; }
+    .hidden { display: none !important; }
+
+    .filter-box { display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #eee; }
+    .filter-group { width: 100%; }
+    .filter-group label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 2px; }
+    .filter-group input, .filter-group select { margin-bottom: 0; padding: 8px; font-size: 14px; }
+    .action-buttons-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .action-buttons-group .btn { margin: 0; }
+
+    #loginOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+    .login-box { background: white; padding: 25px 20px; border-radius: 8px; width: 100%; max-width: 340px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+    .user-info { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #e8f4fc; padding: 10px 15px; border-radius: 6px; margin-bottom: 10px; font-weight: bold; color: #2980b9; font-size: 14px; }
+
+    /* 通信状態・未送信バー */
+    .status-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; font-weight: bold; }
+    .status-bar.online { background: #eafaf1; color: #1e8449; border: 1px solid #a9dfbf; }
+    .status-bar.offline { background: #fdf2e9; color: #a04000; border: 1px solid #f5cba7; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+    .status-text { flex: 1; }
+    .pending-badge { background: var(--danger); color: #fff; border-radius: 999px; padding: 3px 10px; font-size: 12px; border: none; cursor: pointer; }
+    .pending-badge.zero { background: #95a5a6; }
+
+    .queue-item { border: 1px solid #eee; border-left: 4px solid var(--warning); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 13px; background: #fffdf9; }
+    .queue-item.auth, .queue-item.error { border-left-color: var(--danger); }
+    .queue-item .q-head { display: flex; justify-content: space-between; gap: 8px; font-weight: bold; margin-bottom: 4px; }
+    .queue-item .q-err { color: var(--danger); margin-top: 4px; }
+
+    #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); max-width: 92%; background: #2c3e50; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 14px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: opacity .25s; }
+    #toast.show { opacity: 1; }
+    #toast.ok { background: #1e8449; } #toast.warn { background: #ba4a00; } #toast.err { background: #c0392b; }
+
+    #gpsStatus { font-size: 12px; color: var(--text-sub); margin: -8px 0 12px; min-height: 1em; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+    @media (min-width: 768px) {
+      body { padding: 20px; max-width: 1000px; margin: 0 auto; }
+      h2 { font-size: 1.5rem; }
+      .filter-box { flex-direction: row; align-items: flex-end; }
+      .filter-group { flex: 1; }
+      .action-buttons-group { flex-direction: row; }
+      .action-buttons-group .btn { width: auto; flex: 1; }
+      .btn { width: auto; padding: 10px 20px; }
+    }
+
+    @media print {
+      body { background-color: #fff; padding: 0; max-width: none; }
+      .nav-tabs, .filter-box, .btn, .user-info, .status-bar, .no-print, th:first-child, td:first-child { display: none !important; }
+      .card { box-shadow: none; padding: 0; margin: 0; border: none; }
+      h2 { font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #000; }
+      .table-container { overflow: visible; border: none; }
+      table { white-space: normal; }
+      th, td { border: 1px solid #000; font-size: 10px; padding: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ログイン -->
+  <div id="loginOverlay">
+    <div class="login-box">
+      <h3>スタッフログイン</h3>
+      <p style="font-size:13px; color:var(--text-sub);" id="loginMessage">スタッフIDとパスワードを入力してください。</p>
+      <label style="font-size:13px; font-weight:bold;" for="loginId">スタッフID</label>
+      <input type="text" id="loginId" placeholder="例: 101" autocomplete="username">
+      <label style="font-size:13px; font-weight:bold;" for="loginPass">パスワード</label>
+      <input type="password" id="loginPass" placeholder="パスワード" autocomplete="current-password">
+      <button class="btn" id="loginBtn" style="width:100%; margin-top:10px;" onclick="handleLogin()">ログイン</button>
+      <p style="font-size:12px; color:var(--text-sub); margin-bottom:0;">初回ログインは電波のある場所で行ってください。一度ログインすれば圏外でも入力できます。</p>
+    </div>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <h2>クリニック集荷・センター管理</h2>
+
+    <div class="user-info">
+      <span id="displayStaffName">ログイン中: </span>
+      <span style="display:flex; gap:6px;">
+        <button class="btn btn-small btn-secondary no-print hidden" id="installBtn" onclick="installApp()">ホーム画面に追加</button>
+        <button class="btn btn-small btn-danger no-print" onclick="logout()">ログアウト</button>
+      </span>
+    </div>
+
+    <div id="statusBar" class="status-bar online no-print">
+      <span class="status-dot"></span>
+      <span class="status-text" id="statusText">オンライン</span>
+      <button class="pending-badge zero" id="pendingBadge" onclick="switchTab('queue')">未送信 0件</button>
+    </div>
+
+    <div class="nav-tabs no-print">
+      <button class="tab-btn active" data-tab="clinic" onclick="switchTab('clinic')">1. クリニック集荷</button>
+      <button class="tab-btn" data-tab="center" onclick="switchTab('center')">2. センター受付・一覧</button>
+      <button class="tab-btn" data-tab="queue" onclick="switchTab('queue')">未送信</button>
+    </div>
+
+    <!-- 1. クリニック集荷 -->
+    <div id="tab-clinic" class="card">
+      <h3>クリニック集荷登録</h3>
+      <p style="color: var(--text-sub); font-size: 13px; margin-bottom: 15px;">受け取る品目の数量を入力して登録します。圏外でも端末に保存され、電波が戻ると自動で送信されます。</p>
+
+      <div class="clinic-header-row">
+        <label for="clinicName">クリニック名</label>
+        <button class="btn btn-gps" onclick="selectNearestClinic()">現在地から近い順に並び替え</button>
+      </div>
+      <select id="clinicName"></select>
+      <div id="gpsStatus"></div>
+
+      <h4 style="font-size: 1rem; margin: 15px 0 10px;">受け取り物数量入力（カテゴリ別）</h4>
+      <div id="itemList"></div>
+
+      <label for="remarks" style="font-weight: bold; font-size: 14px; display: block; margin-top: 10px;">備考</label>
+      <textarea id="remarks" placeholder="特記事項があれば入力してください"></textarea>
+
+      <button class="btn" id="submitBtn" onclick="submitClinicCollection()">集荷データを登録する</button>
+    </div>
+
+    <!-- 2. センター受付・一覧 -->
+    <div id="tab-center" class="card hidden">
+      <h3>センター受付・一覧確認（確認表）</h3>
+      <p style="color: var(--text-sub); font-size: 13px;" class="no-print">条件で絞り込み、チェックを入れた項目をまとめてセンター受付処理できます。この画面は電波が必要です。</p>
+
+      <div class="filter-box no-print">
+        <div class="filter-group">
+          <label for="filterDate">日付絞り込み</label>
+          <input type="date" id="filterDate" onchange="filterData()">
+        </div>
+        <div class="filter-group">
+          <label for="filterStatus">ステータス絞り込み</label>
+          <select id="filterStatus" onchange="filterData()">
+            <option value="">すべて</option>
+            <option value="集荷待ち">集荷待ち</option>
+            <option value="センター受付済">センター受付済</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterKeyword">キーワード検索</label>
+          <input type="text" id="filterKeyword" placeholder="クリニック名/品目など" oninput="filterData()">
+        </div>
+      </div>
+
+      <div class="action-buttons-group no-print">
+        <button class="btn btn-secondary" onclick="loadData()">データを更新</button>
+        <button class="btn btn-success" onclick="batchReceiveAtCenter()">選択項目を一括受付</button>
+        <button class="btn btn-print" onclick="window.print()">確認表を印刷</button>
+      </div>
+
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th class="no-print" style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" aria-label="すべて選択"></th>
+              <th>ID</th><th>日時</th><th>クリニック名</th><th>品目</th><th>数量</th><th>ステータス</th>
+              <th>GPS</th><th>センター受付日時</th><th>備考</th><th>受取確認者</th><th>受付確認者</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. 未送信一覧 -->
+    <div id="tab-queue" class="card hidden">
+      <h3>未送信の集荷データ</h3>
+      <p style="color: var(--text-sub); font-size: 13px;">端末に保存されていて、まだスプレッドシートに届いていないデータです。電波が戻ると自動で送信されます（アプリを閉じていても送信されます）。</p>
+      <div class="action-buttons-group">
+        <button class="btn btn-success" onclick="manualSync()">今すぐ送信する</button>
+      </div>
+      <div id="queueList"></div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="db.js"></script>
+  <script src="sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
